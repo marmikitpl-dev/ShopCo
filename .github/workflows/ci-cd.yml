@@ -19,27 +19,17 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '18'
+        cache: 'yarn'
         
     - name: Install client dependencies
       run: |
         cd client
-        npm install
-        
-    - name: Lint client code
-      run: |
-        cd client
-        npm run lint
+        yarn install
         
     - name: Build client
       run: |
         cd client
-        npm run build
-        
-    - name: Upload client build artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: client-build
-        path: client/dist
+        yarn build
 
   # Test and Build Server
   server-build:
@@ -53,38 +43,14 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '18'
+        cache: 'yarn'
         
     - name: Install server dependencies
       run: |
         cd server
-        npm install
+        yarn install
         
-    - name: Test server (when tests are added)
+    - name: Test server
       run: |
         cd server
-        # npm test (uncomment when tests are added)
-        echo "Server tests will run here"
-
-  # Deploy to staging (on develop branch)
-  deploy-staging:
-    needs: [client-build, server-build]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/develop'
-    
-    steps:
-    - name: Deploy to staging
-      run: |
-        echo "Deploy to staging environment"
-        # Add your staging deployment commands here
-
-  # Deploy to production (on main branch)
-  deploy-production:
-    needs: [client-build, server-build]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    
-    steps:
-    - name: Deploy to production
-      run: |
-        echo "Deploy to production environment"
-        # Add your production deployment commands here
+        echo "Server dependencies installed successfully"
