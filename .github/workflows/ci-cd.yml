@@ -1,0 +1,94 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # Test and Build Client
+  client-build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: client/package-lock.json
+        
+    - name: Install client dependencies
+      run: |
+        cd client
+        npm ci
+        
+    - name: Lint client code
+      run: |
+        cd client
+        npm run lint
+        
+    - name: Build client
+      run: |
+        cd client
+        npm run build
+        
+    - name: Upload client build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: client-build
+        path: client/dist
+
+  # Test and Build Server
+  server-build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: server/package-lock.json
+        
+    - name: Install server dependencies
+      run: |
+        cd server
+        npm ci
+        
+    - name: Test server (when tests are added)
+      run: |
+        cd server
+        # npm test (uncomment when tests are added)
+        echo "Server tests will run here"
+
+  # Deploy to staging (on develop branch)
+  deploy-staging:
+    needs: [client-build, server-build]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    
+    steps:
+    - name: Deploy to staging
+      run: |
+        echo "Deploy to staging environment"
+        # Add your staging deployment commands here
+
+  # Deploy to production (on main branch)
+  deploy-production:
+    needs: [client-build, server-build]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Deploy to production
+      run: |
+        echo "Deploy to production environment"
+        # Add your production deployment commands here
