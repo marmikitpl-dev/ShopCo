@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ main ]
 
+env:
+  NODE_VERSION: '20'
+  CACHE_VERSION: 'v1'
+
 jobs:
   # Test and Build Client
   client-build:
@@ -18,17 +22,45 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '20'
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'yarn'
+        cache-dependency-path: 'client/yarn.lock'
+        
+    - name: Cache client node_modules
+      uses: actions/cache@v4
+      id: client-cache
+      with:
+        path: |
+          client/node_modules
+          ~/.cache/yarn
+        key: ${{ env.CACHE_VERSION }}-client-${{ runner.os }}-node-${{ env.NODE_VERSION }}-${{ hashFiles('client/yarn.lock') }}
+        restore-keys: |
+          ${{ env.CACHE_VERSION }}-client-${{ runner.os }}-node-${{ env.NODE_VERSION }}-
+          ${{ env.CACHE_VERSION }}-client-${{ runner.os }}-
         
     - name: Install client dependencies
+      if: steps.client-cache.outputs.cache-hit != 'true'
       run: |
         cd client
-        yarn install
+        yarn install --frozen-lockfile --prefer-offline
+        
+    - name: Cache client build
+      uses: actions/cache@v4
+      with:
+        path: client/dist
+        key: ${{ env.CACHE_VERSION }}-client-build-${{ github.sha }}
         
     - name: Build client
       run: |
         cd client
         yarn build
+        
+    - name: Upload client build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: client-build
+        path: client/dist
+        retention-days: 7
 
   # Test and Build Server
   server-build:
@@ -41,14 +73,74 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '20'
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'yarn'
+        cache-dependency-path: 'server/yarn.lock'
+        
+    - name: Cache server node_modules
+      uses: actions/cache@v4
+      id: server-cache
+      with:
+        path: |
+          server/node_modules
+          ~/.cache/yarn
+        key: ${{ env.CACHE_VERSION }}-server-${{ runner.os }}-node-${{ env.NODE_VERSION }}-${{ hashFiles('server/yarn.lock') }}
+        restore-keys: |
+          ${{ env.CACHE_VERSION }}-server-${{ runner.os }}-node-${{ env.NODE_VERSION }}-
+          ${{ env.CACHE_VERSION }}-server-${{ runner.os }}-
         
     - name: Install server dependencies
+      if: steps.server-cache.outputs.cache-hit != 'true'
       run: |
         cd server
-        yarn install
+        yarn install --frozen-lockfile --prefer-offline
+        
+    - name: Lint server code
+      run: |
+        cd server
+        # Add linting when you have it configured
+        echo "Server linting would run here"
         
     - name: Test server
       run: |
         cd server
-        echo "Server dependencies installed successfully"
+        # Add actual tests when you have them
+        echo "Server tests would run here"
+        
+    - name: Upload server artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: server-build
+        path: |
+          server/
+          !server/node_modules
+          !server/.env
+        retention-days: 7
+
+  # Deploy job (runs only on main branch)
+  deploy:
+    needs: [client-build, server-build]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Download client build
+      uses: actions/download-artifact@v4
+      with:
+        name: client-build
+        path: client/dist
+        
+    - name: Download server build
+      uses: actions/download-artifact@v4
+      with:
+        name: server-build
+        path: server/
+        
+    - name: Deploy to production
+      run: |
+        echo "Deployment would happen here"
+        echo "Client build ready at: client/dist"
+        echo "Server build ready at: server/"
