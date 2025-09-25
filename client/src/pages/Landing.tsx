@@ -1,11 +1,24 @@
+import { useAuth } from '../hooks/useAuth';
+
 export default function Landing() {
+  const { user, isAuthenticated } = useAuth();
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto px-6 py-20">
+        {/* Welcome Message */}
+        {isAuthenticated && user && (
+          <div className="mb-8 p-4 rounded-lg bg-blue-50 border border-blue-200">
+            <div className="text-blue-800">
+              👋 Welcome back, {user.firstName}!
+            </div>
+          </div>
+        )}
+
         {/* Hero */}
         <section className="text-center">
           <h1 className="text-5xl font-extrabold tracking-tight text-gray-900 mb-4">
-            Discover Products You’ll Love
+            Discover Products You'll Love
           </h1>
           <p className="text-lg text-gray-600 mb-8">
             Curated selections, great prices, and a smooth shopping experience.
