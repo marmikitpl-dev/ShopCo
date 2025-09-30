@@ -33,7 +33,11 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        // Satoshi for UI text (body, paragraphs, buttons, etc.)
+        sans: ['Satoshi', 'Inter', 'system-ui', 'sans-serif'],
+        
+        // Integral CF for headings
+        heading: ['Integral CF Regular', 'Inter', 'system-ui', 'sans-serif'],
       },
     },
   },

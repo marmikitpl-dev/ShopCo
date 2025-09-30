@@ -79,18 +79,18 @@ const ApiStatus: React.FC<ApiStatusProps> = ({ showDetails = false }) => {
   };
 
   return (
-    <div className={`flex items-center space-x-2 text-sm ${getStatusColor()}`}>
-      <span>{getStatusIcon()}</span>
-      <span>{getStatusText()}</span>
+    <div className={`flex items-center space-x-2 text-xs sm:text-sm ${getStatusColor()}`}>
+      <span className="text-sm sm:text-base">{getStatusIcon()}</span>
+      <span className="font-sans font-medium">{getStatusText()}</span>
       {showDetails && lastChecked && (
-        <span className="text-gray-500">
+        <span className="text-gray-500 hidden sm:inline font-sans">
           (Last checked: {lastChecked.toLocaleTimeString()})
         </span>
       )}
       {!isHealthy && (
         <button
           onClick={checkHealth}
-          className="ml-2 px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+          className="ml-2 px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 font-sans touch-manipulation"
           disabled={isChecking}
         >
           Retry
